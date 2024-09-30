@@ -1,0 +1,45 @@
+<!-- create a Working UI using html , css, js  -->
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/0593b7ef97.js" crossorigin="anonymous"></script>
+ </head>
+ <body>
+    <h1>Working UI</h1>
+    <div class="container"> 
+        <div class="searchArea">
+        <input type="search" placeholder="search..." class="search" >
+        <button class="searchbtn">search</button>
+    </div>
+       <div><table class="table"><thead>
+            <tr>
+                <th><input type="checkbox" class="selectAll"></th>
+                <th>ID</th>
+                <th>NAME</th>
+                <th>EMAIL</th>
+                <th>ROLE</th>
+                <th>EDIT</th>
+                <TH>DELETE</TH>
+            </tr>
+           </thead>
+        <tbody class="tbody">
+            <!-- create rows here -->
+        </tbody></table>
+    </div>
+        <div class="pagination" id="paginationControls">
+                <button class="button" id="firstpage">First</button>
+                <button class="button" id="previouspage">Previous</button>
+                <span id="pageInfo">Page 1 of 10</span>
+                <button class="button" id="nextpage">Next</button>
+                <button class="button" id="lastpage">Last</button>
+        </div>
+            <button class="deleteselected">DeleteSelected</button>
+
+    </div>
+    <script src="script.js"></script>
+ </body>
+ </html>
