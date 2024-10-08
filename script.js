@@ -1,23 +1,24 @@
 //local storage//
 localStorage.removeItem('userdata');
-const UserData = "userdata";
+const userData = "userdata";
 
 //fetching data and handling local storage//
 //import APIurl from config.js
-import { APIurl } from "./config.js"; //import api url
-let p= fetch(APIurl);
+import { userDataUrl } from "./config.js"; //import api url
+let p= fetch(userDataUrl);
 p.then((response)=>{
-    if(!response.ok)
+    if(!response.ok){
         throw new Error("Network response is not ok"+response.statusText);
-    else
+    } else {
 return response.json();
+    }
 }).then((data)=>{
     // Check if there's data in local storage
-    let storedData = localStorage.getItem(UserData);
+    let storedData = localStorage.getItem(userData);
     if (storedData) {
         data = JSON.parse(storedData); // Use data from local storage if available
     } else {
-        localStorage.setItem(UserData, JSON.stringify(data)); // Store fetched data in local storage
+        localStorage.setItem(userData, JSON.stringify(data)); // Store fetched data in local storage
     }
     adminUI(data);
 })
@@ -26,7 +27,7 @@ return response.json();
 });
 
  //this function contains all DOM_related code
-function adminUI(data){
+ function adminUI(data){
 const tablebody = document.querySelector(".tbody");
 const searchbutton =document.querySelector(".searchbtn");
 const searchText= document.querySelector(".search");
@@ -56,7 +57,7 @@ const createRows =(data)=>{
     function deleteUser(user, data, row){
        row.remove(); // Remove the row from the table
        data=data.filter(u => u.id !== user.id); // Update the data
-       localStorage.setItem(UserData, JSON.stringify(data)); // Update local storage
+       localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
        createRows(data);
      }
 
@@ -82,7 +83,7 @@ const createRows =(data)=>{
     row.children[2].textContent = user.name; // Update name cell
     row.children[3].textContent = user.email; // Update email cell
     row.children[4].textContent = user.role; // Update role cell
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data)); // Update local storage
+    localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
     }
       
     // Add event to edit button for this row
@@ -101,10 +102,11 @@ searchbutton.addEventListener("click",()=>{
     const field =[user.id,user.name,user.email,user.role];
     return field.some(field=>field.toLowerCase().includes(searchword));
  });
-  if(filteredData.length===0)
+  if(filteredData.length===0){
     alert("No Matches Found, Try Again")
-   else
+   } else{
     createRows(filteredData);
+   }
   });
  
    //events to checkboxes
@@ -171,7 +173,7 @@ selectALLcheckboxes.forEach((checkbox)=>{
   row.remove();
   data= data.filter(user => user.id !== userId);
 });
-localStorage.setItem(UserData, JSON.stringify(data)); // Update local storage
+localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
 };
 const del =document.querySelector(".deleteselected");
 del.addEventListener("click",deleteselected);
