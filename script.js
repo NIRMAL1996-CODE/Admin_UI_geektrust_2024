@@ -52,18 +52,16 @@ const createRows =(data)=>{
         <td><button class="edit-btn"><i class="fa-solid fa-pen-to-square"></i></button></td>
         <td><button class="del-btn"><i class="fa-solid fa-trash"></i></button></td>`;
      tablebody.appendChild(row);
-
-     // Add event to delete button for this row
-     const deleteButton = row.querySelector('.del-btn');
-     deleteButton.addEventListener('click', () => {
-        deleteUser(user, data, row) 
-    });
-    
-    // Add event to edit button for this row
+      // Add event to edit button for this row
     const editButton = row.querySelector('.edit-btn');
     editButton.addEventListener('click', () => {
     editrows(user, row);
     });
+       // Add event to delete button for this row
+       const deleteButton = row.querySelector('.del-btn');
+       deleteButton.addEventListener('click', () => {
+          deleteUser(user, data, row) 
+      });
   });
 };
    createRows(data);//call createrow()function to create rows in table//
@@ -87,6 +85,8 @@ const createRows =(data)=>{
     localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
     }
 
+   
+
   //create a function to delete rows
   function deleteUser(user, data, row){
     row.remove(); // Remove the row from the table
@@ -94,6 +94,7 @@ const createRows =(data)=>{
     localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
     createRows(data);
   }  
+ 
 //adding event to search button
 searchbutton.addEventListener("click",()=>{
     const searchword= searchText.value.toLowerCase(); //.value is used retrieves the current text entered in the input field.
@@ -176,4 +177,4 @@ localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
 };
 const del =document.querySelector(".deleteselected");
 del.addEventListener("click",deleteselected);
- }
+ };
