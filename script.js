@@ -5,8 +5,8 @@ const userData = "userdata";
 //fetching data and handling local storage//
 //import APIurl from config.js
 import { userDataUrl } from "./config.js"; //import api url
-let p= fetch(userDataUrl);
-p.then((response)=>{
+let promise= fetch(userDataUrl);
+promise.then((response)=>{
     if(!response.ok){
         throw new Error("Network response is not ok"+response.statusText);
     } else {
@@ -53,22 +53,23 @@ const createRows =(data)=>{
         <td><button class="del-btn"><i class="fa-solid fa-trash"></i></button></td>`;
      tablebody.appendChild(row);
 
-    //create a function to delete rows
-    function deleteUser(user, data, row){
-       row.remove(); // Remove the row from the table
-       data=data.filter(u => u.id !== user.id); // Update the data
-       localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
-       createRows(data);
-     }
-
      // Add event to delete button for this row
      const deleteButton = row.querySelector('.del-btn');
      deleteButton.addEventListener('click', () => {
         deleteUser(user, data, row) 
     });
     
-    // create a function to edit rows 
-    function editrows(user, row){
+    // Add event to edit button for this row
+    const editButton = row.querySelector('.edit-btn');
+    editButton.addEventListener('click', () => {
+    editrows(user, row);
+    });
+  });
+};
+   createRows(data);//call createrow()function to create rows in table//
+
+  // create a function to edit rows 
+   function editrows(user, row){
     // Prompt user for new data
     const newName = prompt("Enter new name:", user.name);
     const newEmail = prompt("Enter new email:", user.email);
@@ -85,16 +86,14 @@ const createRows =(data)=>{
     row.children[4].textContent = user.role; // Update role cell
     localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
     }
-      
-    // Add event to edit button for this row
-    const editButton = row.querySelector('.edit-btn');
-    editButton.addEventListener('click', () => {
-    editrows(user, row);
-    });
-  });
-};
-   createRows(data);//call createrow()function to create rows in table//
 
+  //create a function to delete rows
+  function deleteUser(user, data, row){
+    row.remove(); // Remove the row from the table
+    data=data.filter(u => u.id !== user.id); // Update the data
+    localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
+    createRows(data);
+  }  
 //adding event to search button
 searchbutton.addEventListener("click",()=>{
     const searchword= searchText.value.toLowerCase(); //.value is used retrieves the current text entered in the input field.
@@ -177,4 +176,4 @@ localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
 };
 const del =document.querySelector(".deleteselected");
 del.addEventListener("click",deleteselected);
-}
+ }
