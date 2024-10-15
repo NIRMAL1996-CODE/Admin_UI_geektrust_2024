@@ -12,15 +12,17 @@ promise.then((response)=>{
     } else {
 return response.json();
     }
-}).then((data)=>{
+}).then((fetcheddata)=>{
     // Check if there's data in local storage
     let storedData = localStorage.getItem(userData);
     if (storedData) {
-        data = JSON.parse(storedData); // Use data from local storage if available
+      data = JSON.parse(storedData); // Use data from local storage if available
+      adminUI(storedData);
     } else {
-        localStorage.setItem(userData, JSON.stringify(data)); // Store fetched data in local storage
+        localStorage.setItem(userData, JSON.stringify(fetcheddata)); // Store fetched data in local storage
+        adminUI(fetcheddata);
     }
-    adminUI(data);
+   
 })
 .catch((error)=>{
     console.error("There is an error: ", error);
@@ -52,6 +54,7 @@ const createRows =(data)=>{
         <td><button class="edit-btn"><i class="fa-solid fa-pen-to-square"></i></button></td>
         <td><button class="del-btn"><i class="fa-solid fa-trash"></i></button></td>`;
      tablebody.appendChild(row);
+
       // Add event to edit button for this row
     const editButton = row.querySelector('.edit-btn');
     editButton.addEventListener('click', () => {
@@ -60,9 +63,9 @@ const createRows =(data)=>{
        // Add event to delete button for this row
        const deleteButton = row.querySelector('.del-btn');
        deleteButton.addEventListener('click', () => {
-          deleteUser(user, data, row) 
+          deleteUser(user, data, row); 
       });
-  });
+   });
 };
    createRows(data);//call createrow()function to create rows in table//
 
@@ -85,30 +88,38 @@ const createRows =(data)=>{
     localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
     }
 
-   
-
-  //create a function to delete rows
+   //create a function to delete rows
+  //  function deleteUser(user, data, row){
+  //   row.remove(); // Remove the row from the table
+  //   data=data.filter(u => u.id !== user.id); // Update the data
+  //   console.log(data);
+  //   localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
+  //   createRows(data);
+    
+  // }  
   function deleteUser(user, data, row){
     row.remove(); // Remove the row from the table
-    data=data.filter(u => u.id !== user.id); // Update the data
-    localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
-    createRows(data);
-  }  
+    let storedData = JSON.parse(localStorage.getItem(userData));
+    storedData=storedData.filter(u => u.id !== user.id); // Update the data
+    localStorage.setItem(userData, JSON.stringify(storedData)); // Update local storage
+    }
  
 //adding event to search button
 searchbutton.addEventListener("click",()=>{
     const searchword= searchText.value.toLowerCase(); //.value is used retrieves the current text entered in the input field.
-    const filteredData= data.filter((user)=>{
+    let storedData = JSON.parse(localStorage.getItem(userData)); // Retrieve data from local storage
+    const filteredData= storedData.filter((user)=>{         
     const field =[user.id,user.name,user.email,user.role];
     return field.some(field=>field.toLowerCase().includes(searchword));
- });
+    });
+  
   if(filteredData.length===0){
     alert("No Matches Found, Try Again")
    } else{
     createRows(filteredData);
    }
   });
- 
+  
    //events to checkboxes
    selectALLcheckbox.addEventListener("change",()=>{
    const rowcheckbox= document.querySelectorAll(".rowcheckbox");
