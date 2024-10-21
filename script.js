@@ -63,7 +63,7 @@ const createRows =(data)=>{
        // Add event to delete button for this row
        const deleteButton = row.querySelector('.del-btn');
        deleteButton.addEventListener('click', () => {
-          deleteUser(user, data, row); 
+          deleteUser(user, row); 
       });
    });
 };
@@ -85,59 +85,84 @@ const createRows =(data)=>{
     row.children[2].textContent = user.name; // Update name cell
     row.children[3].textContent = user.email; // Update email cell
     row.children[4].textContent = user.role; // Update role cell
-    localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
+
+     // save the updated data to localStorage
+     let storedData = JSON.parse(localStorage.getItem(userData));
+     const index = storedData.findIndex(u => u.id === user.id); // Find the index of the edited user
+     storedData[index] = user; // Replace the old user with the updated one
+    localStorage.setItem(userData, JSON.stringify(storedData)); // Update local storage
     }
 
-   //create a function to delete rows
-  //  function deleteUser(user, data, row){
-  //   row.remove(); // Remove the row from the table
-  //   data=data.filter(u => u.id !== user.id); // Update the data
-  //   console.log(data);
-  //   localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
-  //   createRows(data);
-    
-  // }  
-  function deleteUser(user, data, row){
+    //create a function to delete rows
+    function deleteUser(user, row){
     row.remove(); // Remove the row from the table
     let storedData = JSON.parse(localStorage.getItem(userData));
     storedData=storedData.filter(u => u.id !== user.id); // Update the data
     localStorage.setItem(userData, JSON.stringify(storedData)); // Update local storage
+
+    const totalPages = Math.ceil(storedData.length / itemsInPage); // Recalculate totalPages after deletion
+    createRows(storedData); // Re-render rows
+
+    // Adjust pagination if needed after deletion
+    if (currentPage > totalPages) {
+        currentPage = totalPages; // Adjust to last page if deletion removes rows from the last page
+    }
+    displayPage(currentPage); //Update the current page display
     }
  
-//adding event to search button
-searchbutton.addEventListener("click",()=>{
+    //adding event to search button
+    searchbutton.addEventListener("click",()=>{
     const searchword= searchText.value.toLowerCase(); //.value is used retrieves the current text entered in the input field.
     let storedData = JSON.parse(localStorage.getItem(userData)); // Retrieve data from local storage
     const filteredData= storedData.filter((user)=>{         
     const field =[user.id,user.name,user.email,user.role];
-    return field.some(field=>field.toLowerCase().includes(searchword));
+       return field.some(field=>field.toLowerCase().includes(searchword));
     });
-  
-  if(filteredData.length===0){
-    alert("No Matches Found, Try Again")
-   } else{
-    createRows(filteredData);
-   }
+
+      if(filteredData.length===0){
+        alert("No Matches Found, Try Again")
+      } else{
+        createRows(filteredData);
+      }
   });
-  
+      // Events to checkboxes
+      tablebody.addEventListener("change", (event) => {
+        if (event.target.classList.contains("rowcheckbox")) {
+            const row = event.target.closest("tr"); // Get the closest row for this checkbox
+            if (event.target.checked) {
+                row.classList.add('selected'); // Add class for selected rows
+            } else {
+                row.classList.remove('selected'); // Remove class for deselected rows
+            }
+        }
+    });
+
    //events to checkboxes
    selectALLcheckbox.addEventListener("change",()=>{
    const rowcheckbox= document.querySelectorAll(".rowcheckbox");
    rowcheckbox.forEach((checkbox)=>{
    checkbox.checked = selectALLcheckbox.checked;
+   const row = checkbox.closest("tr");
+        if (checkbox.checked) {
+            row.classList.add('selected'); // Add class for selected rows
+        } else {
+            row.classList.remove('selected'); // Remove class for deselected rows
+        }
      });
    });
 
 //create pagination 
    const itemsInPage= 10;
    let currentPage= 1;
-   const totalPages= Math.ceil(data.length/ itemsInPage);
+
    const displayPage= (page)=>{
-      const start= (currentPage-1)*itemsInPage;
+    let storedData = JSON.parse(localStorage.getItem(userData)); // Get updated data from localStorage
+      const start= (page-1)*itemsInPage;
       const end= start+itemsInPage;
-      const paginatedData= data.slice(start,end);//till here sliced the data, that send to createrows(), which than show rows
+      const paginatedData=storedData.slice(start,end);//till here sliced the data, that send to createrows(), which than show rows
       createRows(paginatedData);
 
+   const totalPages= Math.ceil(storedData.length/ itemsInPage);
    firstPage.disabled = (currentPage === 1);
    previousPage.disabled = (currentPage === 1);
    nextPage.disabled = (currentPage === totalPages);
@@ -163,6 +188,7 @@ displayPage(currentPage);
 });
 
 nextPage.addEventListener("click",()=>{
+const totalPages = Math.ceil(JSON.parse(localStorage.getItem(userData)).length / itemsInPage);
 if(currentPage<totalPages)
 currentPage++;
 selectALLcheckbox.checked = false; 
@@ -170,6 +196,7 @@ displayPage(currentPage);
 });
 
 lastPage.addEventListener("click",()=>{
+const totalPages = Math.ceil(JSON.parse(localStorage.getItem(userData)).length / itemsInPage);
 currentPage=totalPages;
 selectALLcheckbox.checked = false; 
 displayPage(currentPage);
@@ -188,4 +215,4 @@ localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
 };
 const del =document.querySelector(".deleteselected");
 del.addEventListener("click",deleteselected);
- };
+};
