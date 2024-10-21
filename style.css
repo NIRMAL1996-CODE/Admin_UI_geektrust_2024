@@ -83,5 +83,8 @@ td{
     background-color: rgb(232, 12, 12);
 
 }
+.selected{
+    background-color: grey;
+}
 
 
