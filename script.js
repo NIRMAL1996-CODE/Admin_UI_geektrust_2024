@@ -113,6 +113,11 @@ const createRows =(data)=>{
     //adding event to search button
     searchbutton.addEventListener("click",()=>{
     const searchword= searchText.value.toLowerCase(); //.value is used retrieves the current text entered in the input field.
+    if (!searchword) {
+        alert("Please enter a search term.");
+        return; // Stop if the search field is empty
+    }
+
     let storedData = JSON.parse(localStorage.getItem(userData)); // Retrieve data from local storage
     const filteredData= storedData.filter((user)=>{         
     const field =[user.id,user.name,user.email,user.role];
