@@ -115,6 +115,7 @@ const createRows =(data)=>{
     const searchword= searchText.value.toLowerCase(); //.value is used retrieves the current text entered in the input field.
     if (!searchword) {
         alert("Please enter a search term.");
+        displayPage(1);
         return; // Stop if the search field is empty
     }
 
