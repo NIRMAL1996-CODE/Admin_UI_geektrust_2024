@@ -67,7 +67,7 @@ const createRows =(data)=>{
       });
    });
 };
-   createRows(data);//call createrow()function to create rows in table// ̰
+   createRows(data);//call createrow()function to create rows in table//
 
   // create a function to edit rows 
    function editrows(user, row){
