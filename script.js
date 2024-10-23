@@ -1,29 +1,45 @@
 //local storage//
-const LOCAL_STORAGE_KEY = "user_data";
+localStorage.removeItem('userdata');
+const userData = "userdata";
 
-//fetching data //
-let promise= fetch("https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json");
+//fetching data and handling local storage//
+//import APIurl from config.js
+import { userDataUrl } from "./config.js"; //import api url
+let promise= fetch(userDataUrl);
 promise.then((response)=>{
-    if(!response.ok)
+    if(!response.ok){
         throw new Error("Network response is not ok"+response.statusText);
-    else
-return response.json();
-}).then((data)=>{
-    // Check if there's data in local storage
-    let storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (storedData) {
-        data = JSON.parse(storedData); // Use data from local storage if available
     } else {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data)); // Store fetched data in local storage
+return response.json();
     }
-    console.log(data);
+}).then((fetcheddata)=>{
+    // Check if there's data in local storage
+    let storedData = localStorage.getItem(userData);
+    if (storedData) {
+      data = JSON.parse(storedData); // Use data from local storage if available
+      adminUI(storedData);
+    } else {
+        localStorage.setItem(userData, JSON.stringify(fetcheddata)); // Store fetched data in local storage
+        adminUI(fetcheddata);
+    }
+   
+})
+.catch((error)=>{
+    console.error("There is an error: ", error);
+});
 
-
-    //Since search, edit, delete, pagination, etc., 
-    //typically depend on the fetched data, these actions should be handled inside the .then() block.
-    //lets create the rows in table//
+ //this function contains all DOM_related code
+ function adminUI(data){
 const tablebody = document.querySelector(".tbody");
+const searchbutton =document.querySelector(".searchbtn");
+const searchText= document.querySelector(".search");
+const selectALLcheckbox= document.querySelector(".selectAll");
+const firstPage = document.querySelector("#firstpage");
+const previousPage = document.querySelector("#previouspage");
+const nextPage = document.querySelector("#nextpage");
+const lastPage = document.querySelector("#lastpage");
 
+//create the rows in table//
 const createRows =(data)=>{
     tablebody.innerHTML='';//this is used to empty data from table//
     //loop for row for all users//
@@ -37,78 +53,123 @@ const createRows =(data)=>{
         <td>${user.role}</td>
         <td><button class="edit-btn"><i class="fa-solid fa-pen-to-square"></i></button></td>
         <td><button class="del-btn"><i class="fa-solid fa-trash"></i></button></td>`;
-        tablebody.appendChild(row);
+     tablebody.appendChild(row);
 
-          // Add event to delete button for this row
-          const deleteButton = row.querySelector('.del-btn');
-          deleteButton.addEventListener('click', () => {
-              row.remove(); // Remove the row from the table
-              data = data.filter(user => user.id !== user.id); // Update the data
-              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data)); // Update local storage
-    });
-    
-    // Add event to edit button for this row
+      // Add event to edit button for this row
     const editButton = row.querySelector('.edit-btn');
     editButton.addEventListener('click', () => {
-        // Prompt user for new data
-        const newName = prompt("Enter new name:", user.name);
-        const newEmail = prompt("Enter new email:", user.email);
-        const newRole = prompt("Enter new role:", user.role);
-        
-        // Update the user object
-        if (newName) user.name = newName;
-        if (newEmail) user.email = newEmail;
-        if (newRole) user.role = newRole;
-
-        // Update the row
-        row.children[2].textContent = user.name; // Update name cell
-        row.children[3].textContent = user.email; // Update email cell
-        row.children[4].textContent = user.role; // Update role cell
-
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data)); // Update local storage
+    editrows(user, row);
     });
-});
+       // Add event to delete button for this row
+       const deleteButton = row.querySelector('.del-btn');
+       deleteButton.addEventListener('click', () => {
+          deleteUser(user, row); 
+      });
+   });
 };
-createRows(data);
+   createRows(data);//call createrow()function to create rows in table//
 
-  //adding event to search button
-  const searchbutton =document.querySelector(".searchbtn");
-  const searchText= document.querySelector(".search");
+  // create a function to edit rows 
+   function editrows(user, row){
+    // Prompt user for new data
+    const newName = prompt("Enter new name:", user.name);
+    const newEmail = prompt("Enter new email:", user.email);
+    const newRole = prompt("Enter new role:", user.role);
+        
+    // Update the user object
+    if (newName) user.name = newName;
+    if (newEmail) user.email = newEmail;
+    if (newRole) user.role = newRole;
 
-  searchbutton.addEventListener("click",()=>{
-      const searchword= searchText.value.toLowerCase(); //.value is used retrieves the current text entered in the input field.
-      const filteredData= data.filter((user)=>{
-        const field =[user.id,user.name,user.email,user.role];
-        return field.some(field=>field.toLowerCase().includes(searchword));
-      });
-      createRows(filteredData);
-  });
+     // Update the row
+    row.children[2].textContent = user.name; // Update name cell
+    row.children[3].textContent = user.email; // Update email cell
+    row.children[4].textContent = user.role; // Update role cell
+
+     // save the updated data to localStorage
+     let storedData = JSON.parse(localStorage.getItem(userData));
+     const index = storedData.findIndex(u => u.id === user.id); // Find the index of the edited user
+     storedData[index] = user; // Replace the old user with the updated one
+    localStorage.setItem(userData, JSON.stringify(storedData)); // Update local storage
+    }
+
+    //create a function to delete rows
+    function deleteUser(user, row){
+    row.remove(); // Remove the row from the table
+    let storedData = JSON.parse(localStorage.getItem(userData));
+    storedData=storedData.filter(u => u.id !== user.id); // Update the data
+    localStorage.setItem(userData, JSON.stringify(storedData)); // Update local storage
+
+    const totalPages = Math.ceil(storedData.length / itemsInPage); // Recalculate totalPages after deletion
+    createRows(storedData); // Re-render rows
+
+    // Adjust pagination if needed after deletion
+    if (currentPage > totalPages) {
+        currentPage = totalPages; // Adjust to last page if deletion removes rows from the last page
+    }
+    displayPage(currentPage); //Update the current page display
+    }
  
+    //adding event to search button
+    searchbutton.addEventListener("click",()=>{
+    const searchword= searchText.value.toLowerCase(); //.value is used retrieves the current text entered in the input field.
+    if (!searchword) {
+        alert("Please enter a search term.");
+        displayPage(1);
+        return; // Stop if the search field is empty
+    }
+
+    let storedData = JSON.parse(localStorage.getItem(userData)); // Retrieve data from local storage
+    const filteredData= storedData.filter((user)=>{         
+    const field =[user.id,user.name,user.email,user.role];
+       return field.some(field=>field.toLowerCase().includes(searchword));
+    });
+
+      if(filteredData.length===0){
+        alert("No Matches Found, Try Again")
+      } else{
+        createRows(filteredData);
+      }
+  });
+      // Events to checkboxes
+      tablebody.addEventListener("change", (event) => {
+        if (event.target.classList.contains("rowcheckbox")) {
+            const row = event.target.closest("tr"); // Get the closest row for this checkbox
+            if (event.target.checked) {
+                row.classList.add('selected'); // Add class for selected rows
+            } else {
+                row.classList.remove('selected'); // Remove class for deselected rows
+            }
+        }
+    });
+
    //events to checkboxes
-   const selectALLcheckbox= document.querySelector(".selectAll");
    selectALLcheckbox.addEventListener("change",()=>{
-    const rowcheckbox= document.querySelectorAll(".rowcheckbox");
-      rowcheckbox.forEach((checkbox)=>{
-          checkbox.checked = selectALLcheckbox.checked;
-      });
+   const rowcheckbox= document.querySelectorAll(".rowcheckbox");
+   rowcheckbox.forEach((checkbox)=>{
+   checkbox.checked = selectALLcheckbox.checked;
+   const row = checkbox.closest("tr");
+        if (checkbox.checked) {
+            row.classList.add('selected'); // Add class for selected rows
+        } else {
+            row.classList.remove('selected'); // Remove class for deselected rows
+        }
+     });
    });
 
 //create pagination 
-const firstPage = document.querySelector("#firstpage");
-const previousPage = document.querySelector("#previouspage");
-const nextPage = document.querySelector("#nextpage");
-const lastPage = document.querySelector("#lastpage");
-
    const itemsInPage= 10;
    let currentPage= 1;
-   const totalPages= Math.ceil(data.length/ itemsInPage);
+
    const displayPage= (page)=>{
-      const start= (currentPage-1)*itemsInPage;
+    let storedData = JSON.parse(localStorage.getItem(userData)); // Get updated data from localStorage
+      const start= (page-1)*itemsInPage;
       const end= start+itemsInPage;
-      const paginatedData= data.slice(start,end);//till here sliced the data, that send to createrows(), which than show rows
+      const paginatedData=storedData.slice(start,end);//till here sliced the data, that send to createrows(), which than show rows
       createRows(paginatedData);
 
-         firstPage.disabled = (currentPage === 1);
+   const totalPages= Math.ceil(storedData.length/ itemsInPage);
+   firstPage.disabled = (currentPage === 1);
    previousPage.disabled = (currentPage === 1);
    nextPage.disabled = (currentPage === totalPages);
    lastPage.disabled = (currentPage === totalPages);
@@ -133,6 +194,7 @@ displayPage(currentPage);
 });
 
 nextPage.addEventListener("click",()=>{
+const totalPages = Math.ceil(JSON.parse(localStorage.getItem(userData)).length / itemsInPage);
 if(currentPage<totalPages)
 currentPage++;
 selectALLcheckbox.checked = false; 
@@ -140,26 +202,23 @@ displayPage(currentPage);
 });
 
 lastPage.addEventListener("click",()=>{
+const totalPages = Math.ceil(JSON.parse(localStorage.getItem(userData)).length / itemsInPage);
 currentPage=totalPages;
 selectALLcheckbox.checked = false; 
 displayPage(currentPage);
 });
 
 //add events to deleteALLselected button
-const del =document.querySelector(".deleteselected");
-del.addEventListener("click",()=>{
+function deleteselected(){
 const selectALLcheckboxes= document.querySelectorAll(".rowcheckbox:checked");
 selectALLcheckboxes.forEach((checkbox)=>{
   const row= checkbox.closest("tr");
   const userId = row.children[1].textContent; 
   row.remove();
-  const updatedData = data.filter(user => user.id !== userId);
-
+  data= data.filter(user => user.id !== userId);
 });
-localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data)); // Update local storage
-});
-
-})
-.catch((error)=>{
-    console.error("there is an error: ", error);
-});
+localStorage.setItem(userData, JSON.stringify(data)); // Update local storage
+};
+const del =document.querySelector(".deleteselected");
+del.addEventListener("click",deleteselected);
+};
