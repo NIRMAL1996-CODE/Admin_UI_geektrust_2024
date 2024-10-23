@@ -87,4 +87,36 @@ td{
     background-color: grey;
 }
 
+@media (max-width: 768px)
+{
+    .search{
+        width: 90%;
+    }
+    
+    .table{
+        font-size: 0.8em;
+    }
+    th, td{
+       padding: 8px;
+    }
+    .button, .deleteselected{
+        padding: 8px;
+        font-size: medium;
+    }
+}
+@media (max-width:480px){
+    th, td{
+        font-size: 0.7em;
+    }
+    .search{
+        padding: 8px;
+    }
+    .searchbtn{
+        font-size: medium;
+    }
+    .button, .deleteselected{
+        padding: 5px;
+        font-size: small;
+    }
+}
 
